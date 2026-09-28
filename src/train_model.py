@@ -253,9 +253,13 @@ def train_and_evaluate(
     vectorizer_path = os.path.join(output_dir, "tfidf_vectorizer.pkl")
     classifier_path = os.path.join(output_dir, "spam_classifier.pkl")
     metrics_path = os.path.join(output_dir, "model_metrics.pkl")
+    nb_path = os.path.join(output_dir, "naive_bayes.pkl")
+    lr_path = os.path.join(output_dir, "logistic_regression.pkl")
 
     joblib.dump(tfidf, vectorizer_path)
     joblib.dump(best_model_obj, classifier_path)
+    joblib.dump(models["Multinomial Naive Bayes"], nb_path)
+    joblib.dump(models["Logistic Regression"], lr_path)
 
     # Save complete evaluation bundle (without model objects to keep metrics lightweight and pickle-safe)
     eval_bundle = {

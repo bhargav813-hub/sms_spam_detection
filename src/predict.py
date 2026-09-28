@@ -40,28 +40,37 @@ class SpamPredictor:
         self.classifier = joblib.load(self.classifier_path)
         self.vectorizer = joblib.load(self.vectorizer_path)
         
+        self.models = {}
+        nb_path = os.path.join(self.models_dir, "naive_bayes.pkl")
+        lr_path = os.path.join(self.models_dir, "logistic_regression.pkl")
+        if os.path.exists(nb_path):
+            try:
+                self.models["Naive Bayes"] = joblib.load(nb_path)
+                self.models["Multinomial Naive Bayes"] = self.models["Naive Bayes"]
+            except Exception:
+                pass
+        if os.path.exists(lr_path):
+            try:
+                self.models["Logistic Regression"] = joblib.load(lr_path)
+            except Exception:
+                pass
+
         if os.path.exists(self.metrics_path):
             try:
                 self.metrics = joblib.load(self.metrics_path)
             except Exception:
                 self.metrics = None
 
-    def predict(self, sms_text: str) -> Dict[str, Any]:
+    def predict(self, sms_text: str, model_name: str = "auto") -> Dict[str, Any]:
         """
         Predicts whether an SMS message is Ham (Not Spam) or Spam.
         
         Parameters:
             sms_text (str): Raw SMS text message.
+            model_name (str): Specific model to use ('auto', 'Naive Bayes', or 'Logistic Regression').
             
         Returns:
-            Dict[str, Any]: Prediction result containing:
-                - label: 'spam' or 'ham'
-                - is_spam: bool
-                - confidence: float (percentage 0-100)
-                - proba_ham: float (0.0 to 1.0)
-                - proba_spam: float (0.0 to 1.0)
-                - cleaned_text: str
-                - raw_text: str
+            Dict[str, Any]: Prediction result.
         """
         # Validate input
         if not sms_text or not isinstance(sms_text, str) or not sms_text.strip():
@@ -81,11 +90,20 @@ class SpamPredictor:
                 "raw_text": sms_text
             }
 
+        # Select model object
+        chosen_clf = self.classifier
+        used_name = "Multinomial Naive Bayes"
+        if model_name in self.models:
+            chosen_clf = self.models[model_name]
+            used_name = "Naive Bayes" if "Naive" in model_name else "Logistic Regression"
+        elif self.metrics and "best_model_name" in self.metrics:
+            used_name = self.metrics["best_model_name"]
+
         # Vectorize using fitted TF-IDF
         features = self.vectorizer.transform([cleaned])
 
         # Predict class
-        prediction = self.classifier.predict(features)[0]
+        prediction = chosen_clf.predict(features)[0]
         is_spam = bool(prediction == 1)
         label = "spam" if is_spam else "ham"
 
@@ -94,15 +112,13 @@ class SpamPredictor:
         proba_spam = 0.5
         confidence = 50.0
 
-        if hasattr(self.classifier, "predict_proba"):
-            probabilities = self.classifier.predict_proba(features)[0]
-            # Probabilities ordered by classes [0, 1] -> [ham, spam]
+        if hasattr(chosen_clf, "predict_proba"):
+            probabilities = chosen_clf.predict_proba(features)[0]
             proba_ham = float(probabilities[0])
             proba_spam = float(probabilities[1])
             confidence = float(proba_spam * 100 if is_spam else proba_ham * 100)
-        elif hasattr(self.classifier, "decision_function"):
-            decision = self.classifier.decision_function(features)[0]
-            # Convert decision score to sigmoid probability
+        elif hasattr(chosen_clf, "decision_function"):
+            decision = chosen_clf.decision_function(features)[0]
             proba_spam = float(1 / (1 + (2.718281828459045 ** (-decision))))
             proba_ham = float(1 - proba_spam)
             confidence = float(proba_spam * 100 if is_spam else proba_ham * 100)
@@ -115,8 +131,11 @@ class SpamPredictor:
             "proba_ham": round(proba_ham, 4),
             "proba_spam": round(proba_spam, 4),
             "cleaned_text": cleaned,
-            "raw_text": sms_text
+            "raw_text": sms_text,
+            "model_used": used_name
         }
+
+
 
 
 # Global helper instance for quick usage
@@ -130,12 +149,12 @@ def get_predictor() -> SpamPredictor:
     return _default_predictor
 
 
-def predict_sms(message: str) -> Dict[str, Any]:
+def predict_sms(message: str, model_name: str = "auto") -> Dict[str, Any]:
     """
     Convenience function to classify an SMS message.
     """
     predictor = get_predictor()
-    return predictor.predict(message)
+    return predictor.predict(message, model_name=model_name)
 
 
 if __name__ == "__main__":
