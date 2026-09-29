@@ -219,6 +219,14 @@ def select_example_message(msg_text: str):
     st.session_state["last_prediction_result"] = None
 
 
+def clear_sms_input():
+    """Callback to safely clear the main SMS textarea and prediction result."""
+    st.session_state["main_sms_textarea"] = ""
+    st.session_state["input_sms_text"] = ""
+    st.session_state["last_prediction_result"] = None
+    st.session_state["trigger_predict"] = False
+
+
 # ==============================================================================
 # MODERN DARK SAAS CSS SYSTEM
 # ==============================================================================
@@ -1325,12 +1333,7 @@ elif st.session_state["nav_selection"] == "🔍 Detect Spam":
     with btn_col1:
         predict_clicked = st.button("✈️ Predict Message", use_container_width=True, key="predict_btn")
     with btn_col2:
-        if st.button("🗑️ Clear", use_container_width=True, key="clear_btn"):
-            st.session_state["input_sms_text"] = ""
-            st.session_state["main_sms_textarea"] = ""
-            st.session_state["last_prediction_result"] = None
-            st.session_state["trigger_predict"] = False
-            st.rerun()
+        st.button("🗑️ Clear", use_container_width=True, key="clear_btn", on_click=clear_sms_input)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
