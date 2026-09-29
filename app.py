@@ -375,116 +375,7 @@ st.markdown("""
         display: none !important;
     }
 
-    /* --------------------------------------------------------------------------
-       TOP NAVIGATION BAR
-       -------------------------------------------------------------------------- */
-    .top-nav-bar {
-        background: #0E1626;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 14px;
-        padding: 0.75rem 1.3rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
 
-    .top-nav-left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .nav-menu-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #94A3B8;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
-    .nav-search-box {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
-        padding: 0.45rem 1rem;
-        min-width: 280px;
-        color: #64748B;
-        font-size: 0.85rem;
-    }
-
-    .top-nav-right {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .nav-bell-wrap {
-        position: relative;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #94A3B8;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
-    .nav-bell-ping {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #F43F5E;
-        box-shadow: 0 0 6px #F43F5E;
-    }
-
-    .nav-profile-pill {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 4px 12px 4px 5px;
-        border-radius: 24px;
-        cursor: pointer;
-    }
-
-    .profile-avatar {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 0.82rem;
-        border: 2px solid #8B5CF6;
-    }
-
-    .profile-name {
-        color: #F8FAFC;
-        font-size: 0.84rem;
-        font-weight: 600;
-    }
 
     /* --------------------------------------------------------------------------
        PAGE HEADERS
@@ -982,31 +873,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 
-# ==============================================================================
-# TOP NAVIGATION BAR
-# ==============================================================================
-st.markdown("""
-<div class="top-nav-bar">
-    <div class="top-nav-left">
-        <div class="nav-menu-btn">☰</div>
-        <div class="nav-search-box">
-            <span>🔍</span>
-            <span>Search messages, keywords...</span>
-        </div>
-    </div>
-    <div class="top-nav-right">
-        <div class="nav-bell-wrap">
-            <span>🔔</span>
-            <span class="nav-bell-ping"></span>
-        </div>
-        <div class="nav-profile-pill">
-            <div class="profile-avatar">G</div>
-            <span class="profile-name">Gayathri</span>
-            <span style="font-size:0.65rem; color:#64748B;">▼</span>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+
 
 
 # ==============================================================================
