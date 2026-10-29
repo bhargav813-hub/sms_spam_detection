@@ -12,6 +12,10 @@ import joblib
 import numpy as np
 import pandas as pd
 from collections import Counter
+import matplotlib
+matplotlib.use("Agg")  # Non-interactive backend suitable for scripts and pipelines
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -133,6 +137,54 @@ def extract_top_words(df: pd.DataFrame, top_n: int = 15) -> dict:
     }
 
 
+def plot_and_save_confusion_matrix(
+    cm: np.ndarray | list,
+    model_name: str,
+    output_path: str,
+    labels: list = ["Ham", "Spam"]
+) -> str:
+    """
+    Plots an annotated confusion matrix heatmap with raw counts,
+    percentages, and classification quadrant annotations (TN, FP, FN, TP),
+    and saves the figure to disk.
+    """
+    cm_arr = np.array(cm)
+    cm_percent = cm_arr.astype("float") / cm_arr.sum(axis=1)[:, np.newaxis] * 100
+
+    group_names = ["True Ham (TN)", "False Spam (FP)", "False Ham (FN)", "True Spam (TP)"]
+    group_counts = [f"{val:,}" for val in cm_arr.flatten()]
+    group_percentages = [f"{pct:.2f}%" for pct in cm_percent.flatten()]
+
+    annot_labels = [
+        f"{name}\n{count}\n({pct})"
+        for name, count, pct in zip(group_names, group_counts, group_percentages)
+    ]
+    annot_labels = np.asarray(annot_labels).reshape(2, 2)
+
+    plt.figure(figsize=(6.5, 5.2), dpi=120)
+    sns.heatmap(
+        cm_arr,
+        annot=annot_labels,
+        fmt="",
+        cmap="Blues",
+        cbar=True,
+        xticklabels=labels,
+        yticklabels=labels,
+        linewidths=1.5,
+        linecolor="#ffffff"
+    )
+
+    plt.title(f"Confusion Matrix - {model_name}", fontsize=13, fontweight="bold", pad=12)
+    plt.xlabel("Predicted Class", fontsize=11, fontweight="semibold")
+    plt.ylabel("Actual Class", fontsize=11, fontweight="semibold")
+    plt.tight_layout()
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    plt.savefig(output_path, bbox_inches="tight", dpi=300)
+    plt.close()
+    return output_path
+
+
 def train_and_evaluate(
     data_path: str = "data/spam.csv",
     output_dir: str = "models",
@@ -216,6 +268,12 @@ def train_and_evaluate(
         cm = confusion_matrix(y_test, y_pred).tolist()
         report = classification_report(y_test, y_pred, target_names=["Ham", "Spam"], output_dict=True)
 
+        # Generate and save confusion matrix visualization
+        safe_model_name = name.lower().replace(" ", "_")
+        cm_image_path = os.path.join(output_dir, f"{safe_model_name}_confusion_matrix.png")
+        plot_and_save_confusion_matrix(cm, name, cm_image_path)
+        print(f"      [Visual] Saved confusion matrix heatmap to: {cm_image_path}")
+
         results[name] = {
             "model": model,
             "accuracy": acc,
@@ -223,6 +281,7 @@ def train_and_evaluate(
             "recall": rec,
             "f1_score": f1,
             "confusion_matrix": cm,
+            "confusion_matrix_image": cm_image_path,
             "classification_report": report
         }
 
@@ -260,6 +319,11 @@ def train_and_evaluate(
     joblib.dump(best_model_obj, classifier_path)
     joblib.dump(models["Multinomial Naive Bayes"], nb_path)
     joblib.dump(models["Logistic Regression"], lr_path)
+
+    # Save default confusion matrix image for the winning model
+    winning_cm_path = os.path.join(output_dir, "confusion_matrix.png")
+    plot_and_save_confusion_matrix(best_metrics["confusion_matrix"], best_model_name, winning_cm_path)
+    print(f"      [Visual] Saved best model confusion matrix to: {winning_cm_path}")
 
     # Save complete evaluation bundle (without model objects to keep metrics lightweight and pickle-safe)
     eval_bundle = {
